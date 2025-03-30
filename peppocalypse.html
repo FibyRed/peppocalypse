@@ -1,152 +1,203 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
+
 <head>
-<meta charset="UTF-8">
-<title>Peppocalypse</title>
+  <meta charset="UTF-8">
+  <title>Peppocalypse</title>
+
 <style>
-body {
-  font-family: monospace;
-  background-color: #111;
-  color: #f0f0f0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
-table {
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-td {
-  width: 40px;
-  height: 40px;
-  border: 1px solid #666;
-  text-align: center;
-  vertical-align: middle;
-  cursor: pointer;
-  background-color: #222;
-}
-td.hit {
-  background-color: red;
-  animation: explode 0.4s ease-in-out;
-}
-td.miss {
-  background-color: #444;
-}
-@keyframes explode {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.5); }
-  100% { transform: scale(1); }
-}
-#message {
-  margin-top: 20px;
-  font-size: 18px;
-  text-align: center;
-  max-width: 400px;
-}
+
+    body 
+{
+      background-color: #0e0e0e;
+      color: #fefefe;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      padding: 2rem;
+    }
+
+
+h1 
+{
+      color: #ff6600;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(10, 30px);
+      grid-template-rows: repeat(10, 30px);
+      gap: 2px;
+      justify-content: center;
+      margin: 1rem auto;
+    }
+
+    .cell {
+      width: 30px;
+      height: 30px;
+      background-color: #222; /* Amo queste sincronicità :3 */
+      border: 1px solid #444;
+      cursor: pointer;
+    }
+
+    .cell.hit 
+{
+      background-color: red;
+    }
+
+    .cell.miss 
+{
+      background-color: #555;
+    }
+
+    #messages {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+    }
+
+    select, button {
+      margin: 1rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+    }
+
 </style>
+
 </head>
+
 <body>
-<h1>PEPPOCALYPSE</h1>
-<p>Clicca sulle celle per dire al mondo chi sei.</p>
-<table id="grid"></table>
-<div id="message"></div>
 
-<script>
-const gridSize = 10;
-const shipCount = 3;
-const grid = document.getElementById("grid");
-const message = document.getElementById("message");
+  <h1>PEPPOCALYPSE</h1>
+  <p>Scegli la modalità, BIACTH!</p>
 
-const boomMessages = [
-  "PEPOOOOM",
-  "BOOOOM, BABY",
-  "TRUE BIACTH.",
-  "ON FIRE.",
-  "PEPSI BOOM.",
-  "No lies detected."
-];
+  <select id="mode">
+    <option value="cpu">Sei solo? :3</option>
+    <option value="2p">1 Contro 1</option>
+  </select>
 
-const missMessages = [
-  "Si nu cazz chin d'acque.",
-  "Splash :3",
-  "Arisplash",
-  "Splash, vuoto",
-  "Inefficace",
-  "Vuoto",
-  "Vuoto come il tuo cuore puro"
-];
+  <button onclick="startGame()">Inizia</button>
 
-const secretCells = [11, 22, 33, 44];
-const secretMessages = {
-  11: "Non hai capito niente, ma ti sei convinto di aver capito tutto. Questa è la tua condanna.",
-  22: "Non mi hai distrutta. Mi hai solo costretta a brillare dove non volevi guardare.",
-  33: "Hai preso la parte più vera di me e l’hai messa in discussione. Solo perché non sapevi reggerla.",
-  44: "Parli di manipolazione quando qualcuno ti legge dentro. Perché ti spaventa sentirti visto."
-};
+  <div id="game-board"></div>
+  <div id="messages"></div>
 
-const sarcasticCells = [1, 7, 14];
-const sarcasticResponses = {
-  1: "Ma davvero pensavi di colpirmi lì?",
-  7: "Il tuo intuito oggi dorme, eh.",
-  14: "Mmm, geniale. Proprio geniale."
-};
+  <script>
 
-const easterEgg = "Hai perso anche stavolta, ma non lo ammetterai mai, vero? Tiri fuori il meglio di me, ma non devo ringraziarti. Se te ne accorgessi davvero, vedresti chi sono.";
+    const messages = ["BOOMPEPPE!","POOM!", "PEPSI BOOM", "TRUE, BIACTH", "ON FIRE", "COLPITO SPIETATAMENTE", "FIBY STRIKES AGAIN"];
 
-const finalRevelation = "Io non volevo distruggerti. Volevo che vedessi chi ero mentre ti restava il tempo per farlo.";
+    let mode = "cpu";
+    let board = [];
+    let opponent = [];
 
-const shipPositions = new Set();
-while (shipPositions.size < shipCount) {
-  shipPositions.add(Math.floor(Math.random() * gridSize * gridSize));
-}
+    document.getElementById("mode").addEventListener("change", e => 
 
-for (let i = 0; i < gridSize; i++) {
-  const row = document.createElement("tr");
-  for (let j = 0; j < gridSize; j++) {
-    const cell = document.createElement("td");
-    const index = i * gridSize + j;
-    cell.addEventListener("click", () => {
-      if (cell.classList.contains("hit") || cell.classList.contains("miss")) return;
-
-      if (secretCells.includes(index)) {
-        message.textContent = secretMessages[index];
-        cell.classList.add("hit");
-        return;
-      }
-
-      if (sarcasticCells.includes(index)) {
-        message.textContent = sarcasticResponses[index];
-        cell.classList.add("miss");
-        return;
-      }
-
-      if (shipPositions.has(index)) {
-        cell.classList.add("hit");
-        const randomMsg = boomMessages[Math.floor(Math.random() * boomMessages.length)];
-        message.textContent = randomMsg;
-        shipPositions.delete(index);
-        if (shipPositions.size === 0) {
-          setTimeout(() => {
-            message.textContent = easterEgg;
-            setTimeout(() => {
-              message.textContent = finalRevelation;
-            }, 3500);
-          }, 1000);
-        }
-      } else {
-        cell.classList.add("miss");
-        const randomMiss = missMessages[Math.floor(Math.random() * missMessages.length)];
-        message.textContent = randomMiss;
-      }
+{
+      mode = e.target.value;
     });
-    row.appendChild(cell);
-  }
-  grid.appendChild(row);
-}
 
-// Codice scritto con amore, rabbia e un filo di genio impulsivo.
-</script>
+
+    function startGame() 
+{
+      board = [];
+      opponent = [];
+      const boardContainer = document.getElementById("game-board");
+      boardContainer.innerHTML = "";
+      document.getElementById("messages").textContent = "";
+
+
+      // Griglia 10x10
+      for (let i = 0; i < 100; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.index = i;
+        cell.addEventListener("click", handleClick);
+        boardContainer.appendChild(cell);
+        board.push({ hit: false });
+      }
+
+
+      	if 
+(mode === "cpu") 
+{
+        placeShipsRandomly();
+      } 
+
+
+	else 
+{
+        alert("Giocatore 1: piazza le navi nel codice! (scherzo, funziona come CPU)");
+        placeShipsRandomly();
+      }
+    }
+
+
+
+    function placeShipsRandomly() 
+{
+      opponent = new Array(100).fill(false);
+      
+	for (let i = 0; i < 10; i++) 
+	
+	{
+        let idx;
+        do {
+          idx = Math.floor(Math.random() * 100);
+        } while (opponent[idx]);
+        opponent[idx] = true;
+      
+	}
+    }
+
+
+    function handleClick(e) 
+{
+      const idx = parseInt(e.target.dataset.index);
+
+      	if (board[idx].hit) return;
+      board[idx].hit = true;
+
+      	if (opponent[idx]) 
+{
+        e.target.classList.add("hit");
+        showMessage(randomMessage());
+      } 
+
+	else 
+{
+        e.target.classList.add("miss");
+        showMessage("Nada. Ritenta, sarai più fortunata.");
+      }
+
+      	if (checkWin()) 
+{
+        showMessage("Hai perso anche stavolta ma non lo ammetterai mai, vero? Se sapessi guardare oltre, osservare l'insieme anziché il 	dettaglio, vedresti chi sono veramente, e sapresti amare te stesso quanto io amo me stessa e te. La vera sconfitta è questa.");
+      }
+    }
+
+
+    function showMessage(msg) 
+{
+      document.getElementById("messages").textContent = msg;
+    }
+
+
+    function randomMessage() 
+{
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+
+    function checkWin() 
+{
+      for 
+	(let i = 0; i < 100; i++) {
+        if (opponent[i] && !board[i].hit) return false;
+      }
+
+      return true;
+    }
+
+  </script>
+
 </body>
+
 </html>
